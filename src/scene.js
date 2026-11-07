@@ -17,6 +17,16 @@ export function createWorld(onSelect) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.3;
   host.appendChild(renderer.domElement);
+  renderer.domElement.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+    window.__steamStartup?.fail(
+      "The browser lost its graphics context. Reload the simulator. If it happens again, enable graphics acceleration or try the offline HTML in another browser.",
+    );
+  });
+  renderer.debug.onShaderError = () =>
+    window.__steamStartup?.fail(
+      "The graphics driver could not compile a 3D material. Try enabling browser graphics acceleration or opening the offline HTML in another browser.",
+    );
   scene.add(new THREE.HemisphereLight(0xd4e2ed, 0x2c3031, 2.5));
   const key = new THREE.DirectionalLight(0xffe2bd, 4);
   key.position.set(-4, 9, 7);

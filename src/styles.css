@@ -857,6 +857,27 @@ dialog .close {
 }
 
 /* Full-window simulator: reserve space for the controls, not a hero section. */
+#startupStatus {
+  position: absolute;
+  z-index: 20;
+  top: 45%;
+  left: 10%;
+  right: 10%;
+  padding: 18px;
+  border: 1px solid #8d775d;
+  border-radius: 6px;
+  background: #202a2ef5;
+  color: #e9d3ba;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+}
+#startupStatus[hidden] {
+  display: none;
+}
+.startup-error {
+  overflow: auto;
+}
 .inspection-panel {
   position: absolute;
   left: 18px;

@@ -318,6 +318,7 @@ function frame(now) {
     );
   });
   renderer.render(scene, camera);
+  window.__steamStartup?.frameRendered();
   chart(data, dt);
   if (now - lastUI > 120) {
     lastUI = now;

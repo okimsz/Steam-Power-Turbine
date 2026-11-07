@@ -44,7 +44,7 @@ External reference links in Field notes are optional and require internet.
 | `src/scene.js` | Procedural geometry, twisted airfoil blades, casing and lighting |
 | `src/app.js` | Animation, controls, camera, telemetry and power trend |
 | `src/components.js` | Component explanations and camera targets |
-| `src/steam-flow.js` | Analytical streamlines, inspection arrows, and wet-exhaust mist shader |
+| `src/steam-flow.js` | Analytical streamlines, inspection arrows, and wet-exhaust mist using a standard Three.js material |
 | `src/errors.js` | Visible startup/runtime errors |
 | `scripts/` | Dependency-free preview server and offline builder |
 | `tests/` | Energy balance and kinematics regression tests |
@@ -91,3 +91,4 @@ npm run dev
 
 The generated `dist/` directory is ignored by Git. After cloning, run `npm run build`
 to create the single-file offline HTML. This is separate from the split-AC repository.
+

@@ -43,20 +43,25 @@ export function createSteamFlow(world) {
     new THREE.BufferAttribute(mistPositions, 3),
   );
   mistGeometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
-  const mistMaterial = new THREE.ShaderMaterial({
+  // Standard material avoids custom shader compatibility issues.
+  const sprite = document.createElement("canvas");
+  sprite.width = sprite.height = 32;
+  const ctx = sprite.getContext("2d"),
+    gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gradient.addColorStop(0, "rgba(255,255,255,0.8)");
+  gradient.addColorStop(0.5, "rgba(255,255,255,0.25)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 32, 32);
+  const mistMaterial = new THREE.PointsMaterial({
+    map: new THREE.CanvasTexture(sprite),
+    color: 0xd1e8ef,
+    size: 0.23,
+    sizeAttenuation: true,
     transparent: true,
     depthWrite: false,
-    uniforms: { opacity: { value: 0 }, viewportHeight: { value: 600 } },
-    vertexShader:
-      "attribute float size; uniform float viewportHeight; varying float fade; void main(){ vec4 p=modelViewMatrix*vec4(position,1.0); gl_Position=projectionMatrix*p; gl_PointSize=clamp(size*viewportHeight/max(0.1,-p.z),1.0,55.0); fade=0.6+0.4*sin(position.x*9.0); }",
-    fragmentShader:
-      "uniform float opacity; varying float fade; void main(){ float r=length(gl_PointCoord-vec2(0.5))*2.0; float a=exp(-r*r*4.5)*smoothstep(1.0,0.75,r); if(r>1.0)discard; gl_FragColor=vec4(0.82,0.91,0.94,a*opacity*fade); }",
+    opacity: 0,
   });
-  // Correct ordering for smoothstep on Windows / ANGLE.
-  mistMaterial.fragmentShader = mistMaterial.fragmentShader.replace(
-    "smoothstep(1.0,0.75,r)",
-    "(1.0-smoothstep(0.75,1.0,r))",
-  );
   const mist = new THREE.Points(mistGeometry, mistMaterial);
   mist.frustumCulled = false;
   turbine.add(mist);
@@ -138,8 +143,7 @@ export function createSteamFlow(world) {
     });
     const wetness = clamp(1 - data.quality, 0, 0.3);
     mist.visible = flowing && !inspecting && wetness > 0;
-    mistMaterial.uniforms.opacity.value = wetness * 0.7 * state.spool;
-    mistMaterial.uniforms.viewportHeight.value = world.host.clientHeight;
+    mistMaterial.opacity = wetness * 0.7 * state.spool;
     for (let i = 0; i < mistCount; i++) {
       const t = (state.phase * 2 + i / mistCount) % 1,
         angle = i * 2.399,
