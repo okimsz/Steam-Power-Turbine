@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#20272b" />
+    <title>Steamworks / Turbine laboratory</title>
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#"
+        ><span class="brand-icon">✳</span> STEAMWORKS<span class="edition"
+          >ENGINEERING LAB / 02</span
+        ></a
+      >
+      <div class="header-end">
+        <span class="offline"><i></i> LOCAL / OFFLINE</span
+        ><button id="guideButton">Field notes ↗</button>
+      </div>
+    </header>
+    <main>
+      <section class="workspace">
+        <div class="intro">
+          <div>
+            <p class="eyebrow">
+              ENERGY SYSTEMS &nbsp; / &nbsp; VAPOR TO VOLTAGE
+            </p>
+            <h1>Steam power.<br /><em>Made visible.</em></h1>
+          </div>
+          <p class="intro-copy">
+            Explore the machine that turns<br />heat into rotational energy.
+          </p>
+        </div>
+        <div class="stage" id="stage">
+          <div
+            id="viewport"
+            tabindex="0"
+            aria-label="Interactive steam turbine. Drag to orbit; scroll or pinch to zoom."
+          ></div>
+          <div class="stage-top">
+            <span class="status"
+              ><i></i><span id="statusText">TURBINE ONLINE</span></span
+            ><span id="viewLabel">SECTION / A—A</span>
+          </div>
+          <div class="canvas-tools">
+            <button id="labelsButton" class="active" aria-pressed="true">
+              Labels</button
+            ><button id="tourButton" aria-pressed="false">Orbit tour</button
+            ><button id="resetButton" aria-label="Reset camera">↺</button>
+          </div>
+          <div id="labels"></div>
+          <div class="shaft-readout">
+            <span class="eyebrow">SHAFT SPEED</span>
+            <div><strong id="rpm">—</strong><span>rpm</span></div>
+            <small id="motionCaption">Motion shown at 0.025×</small>
+          </div>
+          <div class="stage-bottom">
+            <div class="view-controls">
+              <button data-view="assembled">Assembled</button
+              ><button data-view="cutaway" class="active">Cutaway</button
+              ><button data-view="exploded">Exploded ↗</button>
+            </div>
+            <span class="orbit-hint" id="orbitHint"
+              >DRAG TO ORBIT · SCROLL TO ZOOM</span
+            >
+          </div>
+        </div>
+        <div class="component-info">
+          <span class="component-index" id="partIndex">02</span>
+          <div>
+            <h2 id="partTitle">Six-stage axial turbine</h2>
+            <p id="partDescription">
+              Fixed guide vanes direct steam onto rotating blades. Successive
+              rows expand the flow and transfer energy to a common shaft.
+            </p>
+          </div>
+          <span class="component-type" id="partType">MECHANICAL WORK</span>
+        </div>
+      </section>
+      <aside>
+        <div class="console-heading">
+          <h2>Operating console</h2>
+          <span class="eyebrow">LIVE MODEL</span>
+        </div>
+        <div class="power-card">
+          <label>NET ELECTRICAL OUTPUT</label>
+          <div><strong id="netPower">—</strong><span>MW</span></div>
+          <svg
+            id="powerChart"
+            viewBox="0 0 280 44"
+            role="img"
+            aria-label="Recent net electrical output, auto-scaled"
+          >
+            <path id="chartFill" d="M0 44H280" />
+            <path id="chartLine" d="M0 40H280" />
+          </svg>
+          <div class="power-meta">
+            <span id="efficiency">— % efficiency</span><span>60 s TREND</span>
+          </div>
+        </div>
+        <div class="mini-metrics">
+          <div>
+            <label>SHAFT TORQUE</label><strong id="torque">—</strong
+            ><small>kN·m</small>
+          </div>
+          <div>
+            <label>STEAM FLOW</label><strong id="flowMetric">—</strong
+            ><small>kg/s</small>
+          </div>
+        </div>
+        <div class="console-controls">
+          <div class="control">
+            <label for="temperature"
+              >Inlet steam temperature
+              <output id="temperatureValue">450 °C</output></label
+            ><input
+              id="temperature"
+              type="range"
+              min="350"
+              max="550"
+              value="450"
+              step="5"
+            />
+            <div class="range-ends"><span>350 °C</span><span>550 °C</span></div>
+          </div>
+          <div class="control">
+            <label for="pressure"
+              >Inlet pressure <output id="pressureValue">40 bar</output></label
+            ><input
+              id="pressure"
+              type="range"
+              min="20"
+              max="80"
+              value="40"
+              step="1"
+            />
+            <div class="range-ends"><span>20 bar</span><span>80 bar</span></div>
+          </div>
+          <div class="control">
+            <label for="flow"
+              >Steam admission <output id="flowValue">3.0 kg/s</output></label
+            ><input
+              id="flow"
+              type="range"
+              min=".5"
+              max="6"
+              value="3"
+              step=".1"
+            />
+            <div class="range-ends">
+              <span>0.5 kg/s</span><span>6.0 kg/s</span>
+            </div>
+          </div>
+          <div class="control">
+            <label for="backPressure">Condenser pressure</label
+            ><select id="backPressure">
+              <option value="0.05">0.05 bar · deep vacuum</option>
+              <option value="0.1" selected>0.10 bar · nominal vacuum</option>
+              <option value="0.2">0.20 bar · reduced vacuum</option>
+              <option value="0.5">0.50 bar · elevated pressure</option>
+              <option value="1">1.00 bar · near atmosphere</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-row">
+          <button id="runButton" aria-pressed="true">⏻ &nbsp; Shut down</button
+          ><button id="resetPlant">Reset plant</button>
+        </div>
+        <div class="motion-control">
+          <label for="motion"
+            >ANIMATION SPEED <output id="motionValue">0.025×</output></label
+          ><input
+            id="motion"
+            type="range"
+            min="0"
+            max="100"
+            value="40"
+            step="1"
+          />
+        </div>
+        <p class="model-note">
+          Educational cycle model · pressures are absolute.<br />Animation speed
+          does not change operating data.
+        </p>
+      </aside>
+    </main>
+    <section class="cycle-strip" aria-label="Steam power cycle">
+      <div class="cycle-caption">
+        <span class="eyebrow">THE RANKINE CYCLE</span>
+        <h2>A continuous<br />exchange of energy.</h2>
+        <span class="cycle-line">HEAT → WORK → ELECTRICITY</span>
+      </div>
+      <button class="cycle-node" data-part="boiler">
+        <span class="node-head"
+          ><b>01</b><span>HEAT ADDITION</span><i>↗</i></span
+        >
+        <h3>Steam generator</h3>
+        <p>Feedwater becomes superheated steam.</p>
+        <strong id="boilerHeat">— <small>MW in</small></strong></button
+      ><button class="cycle-node selected" data-part="turbine">
+        <span class="node-head"><b>02</b><span>EXPANSION</span><i>↗</i></span>
+        <h3>Turbine & generator</h3>
+        <p>Enthalpy falls. The shaft does work.</p>
+        <strong id="shaftPower">— <small>MW shaft</small></strong></button
+      ><button class="cycle-node" data-part="condenser">
+        <span class="node-head"
+          ><b>03</b><span>HEAT REJECTION</span><i>↗</i></span
+        >
+        <h3>Surface condenser</h3>
+        <p>Exhaust steam returns to liquid water.</p>
+        <strong id="condenserHeat">— <small>MW out</small></strong></button
+      ><button class="cycle-node" data-part="pump">
+        <span class="node-head"
+          ><b>04</b><span>PRESSURIZATION</span><i>↗</i></span
+        >
+        <h3>Feedwater pump</h3>
+        <p>Liquid is pumped back to boiler pressure.</p>
+        <strong id="pumpPower">— <small>kW in</small></strong>
+      </button>
+    </section>
+    <footer>
+      <span>STEAMWORKS / PROCEDURAL MECHANICS COLLECTION</span
+      ><span
+        >6 ROTOR STAGES &nbsp; · &nbsp; 2-POLE GENERATOR &nbsp; · &nbsp; 50 Hz
+        NOMINAL</span
+      >
+    </footer>
+    <dialog id="guide">
+      <button id="closeGuide" class="close">Close ×</button>
+      <p class="eyebrow">FIELD NOTES / 02</p>
+      <h2>Inside a steam turbine.</h2>
+      <p>
+        Steam expands through fixed guide vanes and rotating blades,
+        transferring energy to the shaft. The coupled generator converts shaft
+        power to electricity. This is a generic, simplified axial turbine—not a
+        particular manufacturer's machine.
+      </p>
+      <p>
+        <b>Explore:</b> drag to orbit, scroll or pinch to zoom, and click a
+        cycle card or a component. Cutaway removes the upper casing; Exploded
+        raises it along with the upper guide vanes and generator cover. The
+        remaining rows continue to rotate. Peripheral boiler, condenser, and
+        pump geometry is schematic and not to the same scale as the turbine.
+      </p>
+      <p>
+        <b>Keyboard:</b> 1 assembled · 2 cutaway · 3 exploded · Space start/stop
+        · T orbit tour · R reset view. The idle tour starts after 12 seconds;
+        turn Orbit tour off to disable it. Setting animation speed to zero
+        freezes motion, while telemetry continues.
+      </p>
+      <h3>Physics model</h3>
+      <p>
+        The display uses a quasi-steady Rankine-cycle approximation, not a
+        validated steam-table solver. Inlet enthalpy and entropy are fitted
+        classroom estimates with cₚ = 2.3 kJ/(kg·K) and R = 0.4615 kJ/(kg·K).
+        Low-pressure saturation values use rounded anchors at 0.05–1 bar with
+        log-pressure interpolation. Wet and superheated exhaust regions are
+        handled separately.
+      </p>
+      <p>
+        h₃ = 2800 + 2.3(Tin − 250) kJ/kg<br />s₃ = 6.1 + 2.3 ln[(Tin +
+        273.15)/523.15] − 0.4615 ln(Pin/40)<br />x₄s = (s₃ − sf)/sfg; h₄s = hf +
+        x₄s hfg in the wet region<br />h₄ = h₃ − ηt(h₃ − h₄s), with ηt = 82%<br />Wt
+        = ṁ(h₃ − h₄); shaft efficiency = 98%, generator efficiency = 96%<br />wp
+        = v(Pin − Pout)/ηp, v = 0.001 m³/kg, ηp = 75%, pump motor efficiency =
+        90%<br />Qin = ṁ(h₃ − h₂); Qout = ṁ(h₄ − h₁)<br />Qin = Pnet + Qout +
+        mechanical/electrical losses
+      </p>
+      <p>
+        The governor targets 3,000 rpm for a two-pole, nominal 50 Hz generator.
+        Start/stop is a smooth illustrative ramp, not a grid-synchronization or
+        rotor-dynamics model. Torque is derived from shaft power divided by
+        angular speed. Blade geometry, stage pressure distribution, and particle
+        speed are illustrative. During operation, telemetry updates from the
+        same state that drives shaft rotation.
+      </p>
+      <p>
+        <b>References:</b>
+        <a
+          href="https://www.eia.gov/tools/glossary/index.php?id=Steam+turbine"
+          target="_blank"
+          rel="noopener"
+          >EIA: steam turbines</a
+        >
+        ·
+        <a
+          href="https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/conservation-of-energy/"
+          target="_blank"
+          rel="noopener"
+          >NASA: energy conservation</a
+        >
+        ·
+        <a
+          href="https://www.nrc.gov/education-regulatory-research/glossary/condenser"
+          target="_blank"
+          rel="noopener"
+          >NRC: condenser</a
+        >. These links require internet; the simulator does not. Three.js r160.1
+        is bundled locally under its MIT license.
+      </p>
+    </dialog>
+    <noscript
+      ><div class="startup-error">
+        Enable JavaScript to run the simulator. Open the offline HTML in a
+        WebGL-enabled browser.
+      </div></noscript
+    >
+    <script src="src/errors.js"></script>
+    <script src="vendor/three.min.js"></script>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
