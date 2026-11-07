@@ -117,4 +117,18 @@ function step(dt) {
     (state.phase + data.massFlow * 0.35 * state.motionSpeed * dt) % 1;
   return data;
 }
-export { state, TAU, clamp, lerp, saturation, cycle, step };
+// Stage boundaries are illustrative distributions, not a stage-by-stage steam solver.
+function stageReadings(index, s = state, data = cycle(s)) {
+  const i = clamp(Math.round(index), 0, 5);
+  const boundary = (fraction) => ({
+    pressure: s.pressure * Math.pow(s.backPressure / s.pressure, fraction),
+    temperature: lerp(s.temperature, data.exhaustTemperature, fraction),
+    enthalpy: lerp(data.h3, data.h4, fraction),
+  });
+  return {
+    inlet: boundary(i / 6),
+    outlet: boundary((i + 1) / 6),
+    drop: data.drop / 6,
+  };
+}
+export { state, TAU, clamp, lerp, saturation, cycle, step, stageReadings };

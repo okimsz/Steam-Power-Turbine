@@ -44,6 +44,7 @@ External reference links in Field notes are optional and require internet.
 | `src/scene.js` | Procedural geometry, twisted airfoil blades, casing and lighting |
 | `src/app.js` | Animation, controls, camera, telemetry and power trend |
 | `src/components.js` | Component explanations and camera targets |
+| `src/steam-flow.js` | Analytical streamlines, inspection arrows, and wet-exhaust mist shader |
 | `src/errors.js` | Visible startup/runtime errors |
 | `scripts/` | Dependency-free preview server and offline builder |
 | `tests/` | Energy balance and kinematics regression tests |
@@ -56,6 +57,8 @@ Use a full bundler if extending the module syntax beyond its documented support.
 
 - Drag to orbit; wheel/pinch to zoom.
 - Click cycle cards or model parts to inspect them.
+- **Inspect stage** isolates an enlarged fixed-vane/rotor pair and slows the motion. Select stages 1–6 to see estimated pressure, temperature and enthalpy changes. Exit restores your previous motion setting.
+- **Flow overlay** toggles explanatory colored streamlines. Hot vapor is invisible; the soft aerosol appears only for a wet exhaust prediction. These paths are not a CFD solution.
 - Assembled / Cutaway / Exploded control the upper casing and generator cover.
 - Adjust inlet temperature, inlet pressure, admission flow and condenser pressure.
 - Shut down / Start turbine smoothly ramp operation; Reset plant restores defaults.

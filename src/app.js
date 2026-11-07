@@ -1,5 +1,14 @@
-import { state, TAU, clamp, lerp, step, cycle } from "./physics.js";
+import {
+  state,
+  TAU,
+  clamp,
+  lerp,
+  step,
+  cycle,
+  stageReadings,
+} from "./physics.js";
 import { createWorld } from "./scene.js";
+import { createSteamFlow } from "./steam-flow.js";
 import { descriptions } from "./components.js";
 
 const $ = (id) => document.getElementById(id);
@@ -21,6 +30,53 @@ const {
   tracers,
   fire,
 } = world;
+const steamFlow = createSteamFlow(world);
+let inspecting = false,
+  flowEnabled = true,
+  inspectedStage = 0,
+  savedMotion = 40;
+let visibilityBeforeInspection = [];
+function setInspection(enabled) {
+  if (enabled === inspecting) return;
+  activity();
+  if (enabled) {
+    if (state.view === "assembled") setView("cutaway");
+    savedMotion = Number($("motion").value);
+    $("motion").value = Math.min(savedMotion, 10);
+    $("motion").oninput();
+    visibilityBeforeInspection = scene.children.map((object) => [
+      object,
+      object.visible,
+    ]);
+    for (const [object] of visibilityBeforeInspection)
+      if (
+        !object.isLight &&
+        !object.isGridHelper &&
+        object !== world.inspection
+      )
+        object.visible = false;
+    world.inspection.visible = true;
+    world.inspection.scale.setScalar(0.85 + inspectedStage * 0.06);
+    inspecting = true;
+    $("partTitle").textContent = "Inside a turbine stage";
+    $("partDescription").textContent =
+      "Silver vanes stay fixed and turn the flow. Gold blades rotate with the shaft. The cyan arrow shows tangential force on the rotor.";
+  } else {
+    inspecting = false;
+    for (const [object, visible] of visibilityBeforeInspection)
+      object.visible = visible;
+    world.inspection.visible = false;
+    $("motion").value = savedMotion;
+    $("motion").oninput();
+    const d = descriptions[state.selected];
+    $("partTitle").textContent = d.title;
+    $("partDescription").textContent = d.description;
+  }
+  $("inspectButton").classList.toggle("active", inspecting);
+  $("inspectButton").setAttribute("aria-pressed", inspecting);
+  $("inspectionPanel").hidden = !inspecting;
+  home(false);
+}
 const defaults = { ...state };
 const target = new THREE.Vector3(-0.35, 1.7, 0.45),
   desiredTarget = target.clone();
@@ -57,12 +113,20 @@ function activity() {
 }
 function home(manual = true) {
   if (manual) activity();
+  if (inspecting) {
+    desiredTarget.set(0, host.clientWidth < 600 ? 1.35 : 1.85, 0);
+    desiredTheta = 0.45;
+    desiredPhi = 1.1;
+    desiredRadius = 6.8;
+    return;
+  }
   desiredTarget.set(-0.35, 1.7, 0.45);
   desiredTheta = 0.32;
   desiredPhi = 1.12;
   desiredRadius = state.view === "exploded" ? 18 : 15.8;
 }
 function setView(view) {
+  if (inspecting) setInspection(false);
   activity();
   state.view = view;
   $("viewLabel").textContent = {
@@ -77,6 +141,7 @@ function setView(view) {
   home(false);
 }
 function selectPart(id) {
+  if (inspecting) setInspection(false);
   activity();
   const d = descriptions[id];
   state.selected = id;
@@ -121,6 +186,7 @@ function resize() {
   camera.aspect = host.clientWidth / host.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(host.clientWidth, host.clientHeight, false);
+  if (inspecting) home(false);
 }
 new ResizeObserver(resize).observe(host);
 resize();
@@ -143,6 +209,20 @@ function chart(data, dt) {
   );
 }
 function telemetry(data) {
+  if (inspecting) {
+    const s = stageReadings(inspectedStage, state, data);
+    $("stagePressure").textContent =
+      s.inlet.pressure.toFixed(2) +
+      " → " +
+      s.outlet.pressure.toFixed(2) +
+      " bar";
+    $("stageTemperature").textContent =
+      s.inlet.temperature.toFixed(0) +
+      " → " +
+      s.outlet.temperature.toFixed(0) +
+      " °C";
+    $("stageDrop").textContent = s.drop.toFixed(1) + " kJ/kg";
+  }
   $("rpm").textContent = Math.round(data.rpm).toLocaleString("en-US");
   $("netPower").textContent = (data.net / 1000).toFixed(2);
   $("efficiency").textContent =
@@ -181,25 +261,22 @@ function frame(now) {
   generatorRotor.rotation.x = state.angle;
   coupling.rotation.x = state.angle;
   impeller.rotation.y = state.pumpAngle;
-  steamInside.forEach((m, i) => {
-    const t = (state.phase + i / steamInside.length) % 1,
-      a = i * 2.399 + state.angle * 0.1;
-    m.visible = state.spool > 0.005;
-    m.position.set(
-      -2.5 + t * 5,
-      Math.sin(a) * (0.43 + t * 0.58),
-      Math.cos(a) * (0.43 + t * 0.58),
-    );
-  });
+  world.inspectionRotor.rotation.x = state.angle;
+  steamFlow.update(state, data, inspecting, flowEnabled);
   tracers.forEach(({ curve, beads }) =>
     beads.forEach((b, i) => {
-      b.visible = state.spool > 0.005;
+      b.visible = false;
       b.position.copy(curve.getPointAt((state.phase + i / beads.length) % 1));
     }),
   );
   fire.material.emissiveIntensity =
     state.spool * (0.45 + (state.temperature / 550) * 0.8);
-  if (state.autoIdle && !state.tour && now - state.lastInput > 12000) {
+  if (
+    !inspecting &&
+    state.autoIdle &&
+    !state.tour &&
+    now - state.lastInput > 12000
+  ) {
     state.tour = true;
     home(false);
     syncTour();
@@ -230,7 +307,8 @@ function frame(now) {
     el.style.top = y + "px";
     el.classList.toggle(
       "hidden",
-      !state.labels ||
+      inspecting ||
+        !state.labels ||
         p.z > 1 ||
         p.z < -1 ||
         x < 72 ||
@@ -365,6 +443,7 @@ $("labelsButton").onclick = () => {
   $("labelsButton").setAttribute("aria-pressed", state.labels);
 };
 $("resetPlant").onclick = () => {
+  if (inspecting) setInspection(false);
   Object.assign(state, defaults);
   state.lastInput = performance.now();
   for (const id of ["temperature", "pressure", "flow"]) {
@@ -409,7 +488,31 @@ document.addEventListener("visibilitychange", () => {
   lastTime = performance.now();
   state.lastInput = lastTime;
 });
+$("inspectButton").onclick = () => setInspection(!inspecting);
+$("flowButton").onclick = () => {
+  activity();
+  flowEnabled = !flowEnabled;
+  $("flowButton").classList.toggle("active", flowEnabled);
+  $("flowButton").setAttribute("aria-pressed", flowEnabled);
+};
+$("stageSelect").onchange = () => {
+  activity();
+  inspectedStage = Number($("stageSelect").value);
+  world.inspection.scale.setScalar(0.85 + inspectedStage * 0.06);
+};
+$("closeInspection").onclick = () => setInspection(false);
 window.SIM = {
+  setInspection,
+  steamFlow,
+  inspection: world.inspection,
+  inspectionRotor: world.inspectionRotor,
+  inspectionStator: world.inspectionStator,
+  get inspecting() {
+    return inspecting;
+  },
+  get inspectedStage() {
+    return inspectedStage;
+  },
   state,
   scene,
   camera,

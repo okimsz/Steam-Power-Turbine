@@ -1,7 +1,35 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { state, cycle, step, saturation } from "../src/physics.js";
+import {
+  state,
+  cycle,
+  step,
+  saturation,
+  stageReadings,
+} from "../src/physics.js";
 const defaults = { ...state };
+test("stage estimates join continuously and sum to the cycle enthalpy drop", () => {
+  const data = cycle(defaults),
+    stages = Array.from({ length: 6 }, (_, i) =>
+      stageReadings(i, defaults, data),
+    );
+  assert.equal(stages[0].inlet.pressure, defaults.pressure);
+  assert.ok(
+    Math.abs(stages[5].outlet.pressure - defaults.backPressure) < 1e-10,
+  );
+  assert.ok(
+    Math.abs(stages.reduce((sum, s) => sum + s.drop, 0) - data.drop) < 1e-10,
+  );
+  for (let i = 1; i < 6; i++)
+    assert.deepEqual(stages[i].inlet, stages[i - 1].outlet);
+  assert.ok(
+    stages.every(
+      (s) =>
+        s.outlet.pressure < s.inlet.pressure &&
+        s.outlet.enthalpy < s.inlet.enthalpy,
+    ),
+  );
+});
 test("Rankine-loop energy balance closes over the full control range", () => {
   for (const temperature of [350, 450, 550])
     for (const pressure of [20, 40, 80])

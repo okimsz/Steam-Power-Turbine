@@ -211,7 +211,9 @@ export function createWorld(onSelect) {
       for (let j = 0; j < sides; j++) {
         const a = (j / sides) * TAU,
           u = Math.cos(a) * width * 0.5,
-          v = Math.sin(a) * width * 0.11;
+          // Cambered airfoil: rounded leading edge, thin trailing edge and twist.
+          v =
+            Math.sin(a) * width * 0.09 + width * 0.16 * (1 - Math.cos(a) ** 2);
         vertices.push(
           u * Math.cos(angle) - v * Math.sin(angle),
           r,
@@ -308,11 +310,63 @@ export function createWorld(onSelect) {
       );
     }
   const steamInside = [];
-  for (let i = 0; i < 60; i++) {
-    const m = mesh(new THREE.SphereGeometry(0.028, 6, 5), M.trace.clone(), turbine);
-    const t = i / 60;
-    m.material.color.lerp(new THREE.Color('#8ccad8'), t);
-    steamInside.push(m);
+  // Labyrinth gland teeth and split journal housings at the shaft penetrations.
+  for (const end of [-2.58, 2.58]) {
+    for (let i = 0; i < 5; i++)
+      ring(0.185, 0.012, M.edge, turbine, end + (i - 2) * 0.045);
+    const bearing = mesh(
+      new THREE.CylinderGeometry(0.36, 0.36, 0.34, 40, 1, true, 0, Math.PI),
+      M.copper,
+      turbine,
+      end,
+      0,
+      0,
+    );
+    bearing.rotation.z = -Math.PI / 2;
+    for (const z of [-0.32, 0.32]) {
+      box(0.5, 0.09, 0.14, M.edge, turbine, end, -0.06, z);
+      cylinder(0.035, 0.16, M.steel, turbine, end, 0.02, z, "y");
+    }
+  }
+  // An enlarged, independent stage for inspection; it shares the shaft angle.
+  const inspection = group("Stage inspection");
+  inspection.position.set(0, 1.8, 0);
+  inspection.visible = false;
+  const inspectionRotor = group("Inspection rotor", inspection);
+  cylinder(0.18, 2.8, M.steel, inspectionRotor);
+  cylinder(0.4, 0.17, M.steel, inspectionRotor, 0.38);
+  const inspectedBlades = new THREE.InstancedMesh(
+    bladeGeometry(0.38, 1.22, 0.39, 0.85),
+    M.rotor,
+    30,
+  );
+  for (let i = 0; i < 30; i++) {
+    dummy.position.set(0.38, 0, 0);
+    dummy.rotation.set((i / 30) * TAU, 0, 0);
+    dummy.updateMatrix();
+    inspectedBlades.setMatrixAt(i, dummy.matrix);
+  }
+  inspectionRotor.add(inspectedBlades);
+  inspectedBlades.castShadow = true;
+  const inspectionStator = group("Stationary nozzle sector", inspection);
+  // Open sector makes the moving blades behind it visible.
+  for (let i = 0; i < 9; i++) {
+    const b = mesh(
+      bladeGeometry(0.4, 1.24, 0.34, -0.9),
+      M.guide,
+      inspectionStator,
+      -0.48,
+    );
+    b.rotation.x = -0.95 + i * 0.22;
+  }
+  for (const radius of [0.4, 1.26]) {
+    const rail = mesh(
+      new THREE.TorusGeometry(radius, 0.035, 8, 36, 2),
+      M.edge,
+      inspectionStator,
+      -0.48,
+    );
+    rail.rotation.set(0, Math.PI / 2, -1);
   }
   part(turbine, "turbine");
   // The generator is mechanically coupled to the shaft, outside the steam circuit.
@@ -504,6 +558,10 @@ export function createWorld(onSelect) {
   label("03 / CONDENSER", condenser, [0, -0.6, 0.35], "condenser", true);
   label("04 / FEED PUMP", pump, [0, -0.25, 0.7], "pump", true);
   return {
+    turbine,
+    inspection,
+    inspectionRotor,
+    inspectionStator,
     host,
     scene,
     camera,

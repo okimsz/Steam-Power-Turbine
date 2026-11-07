@@ -857,6 +857,92 @@ dialog .close {
 }
 
 /* Full-window simulator: reserve space for the controls, not a hero section. */
+.inspection-panel {
+  position: absolute;
+  left: 18px;
+  bottom: 75px;
+  width: 330px;
+  max-width: calc(100% - 36px);
+  padding: 12px 14px;
+  border: 1px solid #8d775d;
+  border-radius: 6px;
+  background: #202a2ef2;
+  z-index: 2;
+}
+.inspection-panel[hidden] {
+  display: none;
+}
+.inspection-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.inspection-heading select {
+  width: 115px;
+  padding: 5px;
+}
+.inspection-heading button {
+  margin-left: auto;
+  padding: 2px 8px;
+  font-size: 18px;
+}
+.flow-key {
+  display: flex;
+  gap: 10px;
+  font-size: 9px;
+  margin-top: 11px;
+  color: #c3d5dc;
+}
+.flow-key span:last-child {
+  color: #e3b581;
+}
+.inspection-panel dl {
+  margin: 10px 0 0;
+  font-size: 10px;
+}
+.inspection-panel dl > div {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.inspection-panel dt {
+  color: var(--muted);
+}
+.inspection-panel dd {
+  margin: 0;
+  font: 11px monospace;
+}
+.inspection-panel p {
+  font-size: 9px;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+@media (max-width: 740px) {
+  .canvas-tools {
+    left: 14px;
+    right: 14px;
+    top: 55px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+  .shaft-readout {
+    top: 104px;
+  }
+  .inspection-panel {
+    padding: 9px 11px;
+    bottom: 70px;
+  }
+  .inspection-panel dl {
+    margin-top: 6px;
+  }
+  .inspection-panel p {
+    display: none;
+  }
+  .inspection-panel .flow-key {
+    display: none;
+  }
+}
 header {
   height: 56px;
   padding: 0 20px;

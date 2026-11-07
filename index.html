@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#20272b" />
     <title>Steamworks / Turbine laboratory</title>
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="src/styles.css" />
   </head>
   <body>
@@ -31,12 +32,57 @@
             ><span id="viewLabel">SECTION / A—A</span>
           </div>
           <div class="canvas-tools">
+            <button id="inspectButton" aria-pressed="false">
+              Inspect stage
+            </button>
+            <button
+              id="flowButton"
+              class="active"
+              aria-pressed="true"
+              title="Illustrative streamlines; not the visible appearance of hot steam"
+            >
+              Flow overlay
+            </button>
             <button id="labelsButton" class="active" aria-pressed="true">
               Labels</button
             ><button id="tourButton" aria-pressed="false">Orbit tour</button
             ><button id="resetButton" aria-label="Reset camera">↺</button>
           </div>
           <div id="labels"></div>
+          <div class="inspection-panel" id="inspectionPanel" hidden>
+            <div class="inspection-heading">
+              <label for="stageSelect">Stage</label
+              ><select id="stageSelect">
+                <option value="0">1 · inlet</option>
+                <option value="1">2</option>
+                <option value="2">3</option>
+                <option value="3">4</option>
+                <option value="4">5</option>
+                <option value="5">6 · exhaust</option></select
+              ><button id="closeInspection" aria-label="Exit inspection">
+                ×
+              </button>
+            </div>
+            <div class="flow-key">
+              <span>Silver: fixed guide vanes</span
+              ><span>Gold: rotating blades</span>
+            </div>
+            <dl>
+              <div>
+                <dt>Pressure</dt>
+                <dd id="stagePressure">—</dd>
+              </div>
+              <div>
+                <dt>Temperature</dt>
+                <dd id="stageTemperature">—</dd>
+              </div>
+              <div>
+                <dt>Enthalpy drop</dt>
+                <dd id="stageDrop">—</dd>
+              </div>
+            </dl>
+            <p>Illustrative stage estimates · flow slowed for inspection</p>
+          </div>
           <div class="shaft-readout">
             <span class="eyebrow">SHAFT SPEED</span>
             <div><strong id="rpm">—</strong><span>rpm</span></div>
@@ -226,6 +272,41 @@
         freezes motion, while telemetry continues.
       </p>
       <h3>Physics model</h3>
+      <p>
+        <b>Internal flow:</b> hot vapor is invisible. The colored streaks and
+        arrows are explanatory overlays, not a rendering of visible hot steam.
+        Soft mist represents suspended droplets only when the approximate
+        exhaust quality is below 100%. No steam is vented from the sealed
+        machine. Cutaway and exploded views are inspection conventions; the real
+        turbine needs its casing closed to operate.
+      </p>
+      <p>
+        <b>Inspect stage:</b> an enlarged, open sector of fixed silver guide
+        vanes directs flow toward gold rotor blades. The cyan arrow represents
+        tangential force, not another steam stream. The shaft keeps rotating at
+        the common animation scale; inspection temporarily slows it. Stage
+        selection changes the representative blade size and estimated boundary
+        readings. Pressure is distributed geometrically between inlet and
+        exhaust; enthalpy and temperature are interpolated across six stages.
+        These distributions, streamlines and blade profiles are illustrative,
+        not CFD or manufacturing geometry.
+      </p>
+      <p>
+        Mechanism references:
+        <a
+          href="https://www1.eere.energy.gov/manufacturing/pdfs/steamendusertrainingguide.pdf"
+          target="_blank"
+          rel="noopener"
+          >DOE steam turbine training</a
+        >
+        and
+        <a
+          href="https://www.gevernova.com/gas-power/resources/education/how-steam-turbines-work"
+          target="_blank"
+          rel="noopener"
+          >GE Vernova: how steam turbines work</a
+        >.
+      </p>
       <p>
         The display uses a quasi-steady Rankine-cycle approximation, not a
         validated steam-table solver. Inlet enthalpy and entropy are fitted
