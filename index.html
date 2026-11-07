@@ -10,28 +10,15 @@
   <body>
     <header>
       <a class="brand" href="#"
-        ><span class="brand-icon">✳</span> STEAMWORKS<span class="edition"
-          >ENGINEERING LAB / 02</span
-        ></a
+        ><span class="brand-icon">✳</span> STEAMWORKS
+        <span class="edition">Steam turbine</span></a
       >
       <div class="header-end">
-        <span class="offline"><i></i> LOCAL / OFFLINE</span
-        ><button id="guideButton">Field notes ↗</button>
+        <button id="guideButton">Help</button>
       </div>
     </header>
     <main>
       <section class="workspace">
-        <div class="intro">
-          <div>
-            <p class="eyebrow">
-              ENERGY SYSTEMS &nbsp; / &nbsp; VAPOR TO VOLTAGE
-            </p>
-            <h1>Steam power.<br /><em>Made visible.</em></h1>
-          </div>
-          <p class="intro-copy">
-            Explore the machine that turns<br />heat into rotational energy.
-          </p>
-        </div>
         <div class="stage" id="stage">
           <div
             id="viewport"
@@ -186,46 +173,35 @@
       </aside>
     </main>
     <section class="cycle-strip" aria-label="Steam power cycle">
-      <div class="cycle-caption">
-        <span class="eyebrow">THE RANKINE CYCLE</span>
-        <h2>A continuous<br />exchange of energy.</h2>
-        <span class="cycle-line">HEAT → WORK → ELECTRICITY</span>
-      </div>
       <button class="cycle-node" data-part="boiler">
         <span class="node-head"
           ><b>01</b><span>HEAT ADDITION</span><i>↗</i></span
         >
         <h3>Steam generator</h3>
-        <p>Feedwater becomes superheated steam.</p>
+
         <strong id="boilerHeat">— <small>MW in</small></strong></button
       ><button class="cycle-node selected" data-part="turbine">
         <span class="node-head"><b>02</b><span>EXPANSION</span><i>↗</i></span>
         <h3>Turbine & generator</h3>
-        <p>Enthalpy falls. The shaft does work.</p>
+
         <strong id="shaftPower">— <small>MW shaft</small></strong></button
       ><button class="cycle-node" data-part="condenser">
         <span class="node-head"
           ><b>03</b><span>HEAT REJECTION</span><i>↗</i></span
         >
         <h3>Surface condenser</h3>
-        <p>Exhaust steam returns to liquid water.</p>
+
         <strong id="condenserHeat">— <small>MW out</small></strong></button
       ><button class="cycle-node" data-part="pump">
         <span class="node-head"
           ><b>04</b><span>PRESSURIZATION</span><i>↗</i></span
         >
         <h3>Feedwater pump</h3>
-        <p>Liquid is pumped back to boiler pressure.</p>
+
         <strong id="pumpPower">— <small>kW in</small></strong>
       </button>
     </section>
-    <footer>
-      <span>STEAMWORKS / PROCEDURAL MECHANICS COLLECTION</span
-      ><span
-        >6 ROTOR STAGES &nbsp; · &nbsp; 2-POLE GENERATOR &nbsp; · &nbsp; 50 Hz
-        NOMINAL</span
-      >
-    </footer>
+
     <dialog id="guide">
       <button id="closeGuide" class="close">Close ×</button>
       <p class="eyebrow">FIELD NOTES / 02</p>
